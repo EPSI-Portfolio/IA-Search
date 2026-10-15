@@ -1,0 +1,63 @@
+name: mini-search-gpt
+
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ollama-init:
+    image: ollama/ollama
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=ollama:11434
+    entrypoint: ["/bin/sh", "-c", "ollama pull qwen3.5:0.8b && ollama pull qwen3-embedding:0.6b"]
+    restart: "no"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - http.cors.enabled=true
+      - 'http.cors.allow-origin="*"'
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  backend:
+    build: ./fastapi-backend
+    container_name: backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - elasticsearch
+      - ollama   
+
+  front:
+    build: ./react-front
+    container_name: react-front
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend 
+
+volumes:
+  ollama:
+  esdata:
