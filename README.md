@@ -77,12 +77,12 @@ Le script se termine par `indexed 100 clusters`.
 
 ## Ports
 
-| Service | Port hôte | Remarque |
-|---|---|---|
-| Front | 3000 | |
-| Backend | 8000 | |
-| Elasticsearch | 9200 | |
-| Ollama | 11435 | redirigé vers 11434 dans Docker (11434 était déjà utilisé par une installation locale d'Ollama) |
+| Service       | Port hôte | Remarque |
+|---            |---        |       ---|
+| Front         | 3000      |          |
+| Backend       | 8000      |          |
+| Elasticsearch | 9200      |          |
+| Ollama        | 11435     | redirigé vers 11434 dans Docker (11434 était déjà utilisé par une installation locale d'Ollama) |
 
 Dans le réseau Docker, le backend joint `http://elasticsearch:9200` et `http://ollama:11434` (variables d'environnement `ELASTICSEARCH_HOST` et `OLLAMA_URL`). Le script d'indexation tourne sur la machine hôte : il utilise donc `localhost:11435` et `localhost:9200` par défaut.
 
